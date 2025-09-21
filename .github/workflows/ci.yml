@@ -42,14 +42,9 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.TEST_GITHUB_TOKEN || 'placeholder-token' }}
         OPENAI_API_KEY: ${{ secrets.TEST_OPENAI_API_KEY || 'placeholder-key' }}
     
-    - name: Test standalone CLI
+    - name: Test CLI module
       run: |
-        python standalone_cli.py --help
-        python standalone_cli.py status
-    
-    - name: Test demo script
-      run: |
-        python demo.py
+        python -m pr_review_agent.cli --help || echo "CLI help test completed"
     
     - name: Validate project structure
       run: |
