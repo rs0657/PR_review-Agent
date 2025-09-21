@@ -1,0 +1,168 @@
+# PR Review Agent Configuration File
+# This is a sample configuration file that will be automatically created
+# when you run 'pr-review init'
+
+# Git Server Configurations
+servers:
+  github:
+    base_url: https://api.github.com
+    token: ${GITHUB_TOKEN}  # Set this environment variable
+    type: github
+    api_version: v3
+    timeout: 30
+    max_retries: 3
+
+  gitlab:
+    base_url: https://gitlab.com/api
+    token: ${GITLAB_TOKEN}  # Set this environment variable
+    type: gitlab
+    api_version: v4
+    timeout: 30
+    max_retries: 3
+
+  bitbucket:
+    base_url: https://api.bitbucket.org
+    token: ${BITBUCKET_TOKEN}  # Set this environment variable
+    type: bitbucket
+    api_version: 2.0
+    timeout: 30
+    max_retries: 3
+
+# Code Analysis Configuration
+analysis:
+  enabled_analyzers:
+    - structure
+    - security
+    - performance
+    - bugs
+    - standards
+
+  # Programming language configurations
+  languages:
+    python:
+      linters:
+        - pylint
+        - flake8
+        - bandit
+      max_line_length: 88
+      max_file_lines: 500
+
+    javascript:
+      linters:
+        - eslint
+      max_line_length: 100
+      max_file_lines: 500
+
+    typescript:
+      linters:
+        - tslint
+        - eslint
+      max_line_length: 100
+      max_file_lines: 500
+
+    java:
+      linters:
+        - checkstyle
+        - spotbugs
+      max_line_length: 120
+      max_file_lines: 600
+
+    go:
+      linters:
+        - golint
+        - go vet
+      max_line_length: 100
+      max_file_lines: 500
+
+    cpp:
+      linters:
+        - cppcheck
+      max_line_length: 100
+      max_file_lines: 600
+
+  # File size limits
+  max_file_size: 1048576  # 1MB
+
+  # Patterns to exclude from analysis
+  exclude_patterns:
+    - "*.min.js"
+    - "*.bundle.js"
+    - "node_modules/*"
+    - "vendor/*"
+    - "*.generated.*"
+    - "dist/*"
+    - "build/*"
+    - "target/*"
+    - ".git/*"
+    - "__pycache__/*"
+    - "*.pyc"
+    - "coverage/*"
+    - ".coverage"
+
+# AI Configuration
+ai:
+  provider: openai  # openai, huggingface, local
+  model: gpt-4
+  api_key: ${OPENAI_API_KEY}  # Set this environment variable
+  max_tokens: 1500
+  temperature: 0.3
+  enable_suggestions: true
+  enable_inline_comments: true
+
+  # Alternative providers
+  # huggingface:
+  #   model: microsoft/DialoGPT-large
+  #   use_local: false
+
+# Scoring Configuration
+scoring:
+  # Weight for each category (must sum to 1.0)
+  weights:
+    code_quality: 0.25
+    test_coverage: 0.20
+    documentation: 0.15
+    security: 0.20
+    performance: 0.10
+    maintainability: 0.10
+
+  # Score range
+  min_score: 0.0
+  max_score: 100.0
+
+  # Grade thresholds
+  thresholds:
+    excellent: 90
+    good: 75
+    fair: 60
+    poor: 40
+
+# Review Behavior Configuration
+review:
+  # Auto-approve threshold (score above which PR can be auto-approved)
+  auto_approve_threshold: 95
+
+  # Auto-reject threshold (score below which PR should be rejected)
+  auto_reject_threshold: 40
+
+  # Maximum issues to show in inline comments
+  max_inline_comments: 50
+
+  # Post summary comment even if no issues found
+  always_post_summary: true
+
+  # Include code suggestions in comments
+  include_suggestions: true
+
+# CI/CD Integration
+ci_cd:
+  # Block merge if score is below threshold
+  block_merge_threshold: 60
+
+  # Status check context name
+  status_context: "PR Review Agent"
+
+  # Custom status messages
+  status_messages:
+    success: "Code quality check passed"
+    failure: "Code quality issues found"
+    pending: "Analyzing code quality..."
