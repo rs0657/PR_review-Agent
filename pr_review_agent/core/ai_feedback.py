@@ -54,7 +54,7 @@ class OpenAIFeedbackProvider(BaseFeedbackProvider):
                 import openai
                 self.client = openai.OpenAI(api_key=self.api_key)
             except ImportError:
-                print("OpenAI library not available. Install with: pip install openai")
+                # Silently handle missing OpenAI - let CLI provide better error messages
                 self.client = None
         else:
             self.client = None

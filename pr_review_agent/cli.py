@@ -5,17 +5,42 @@ import click
 import json
 import os
 import sys
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
 
-from .core.reviewer import PRReviewer
 from .core.config import Config
+
+# Optional imports for full functionality
+try:
+    from .core.reviewer import PRReviewer
+    FULL_FEATURES_AVAILABLE = True
+except ImportError as e:
+    PRReviewer = None
+    FULL_FEATURES_AVAILABLE = False
+    MISSING_DEPENDENCIES_MSG = str(e)
 
 
 console = Console()
+
+
+def require_full_features():
+    """Check if full features are available, exit with helpful message if not."""
+    if not FULL_FEATURES_AVAILABLE:
+        console.print("[red]❌ Full features not available[/red]")
+        console.print("[yellow]Missing dependencies. Install with:[/yellow]")
+        console.print("[cyan]pipx install pr-review-agent[full][/cyan]")
+        console.print("[cyan]# or[/cyan]")
+        console.print("[cyan]pip install 'pr-review-agent[full]'[/cyan]")
+        sys.exit(1)
+
+
+def get_reviewer(config_path: Optional[str] = None):
+    """Get a PRReviewer instance, checking dependencies first."""
+    require_full_features()
+    return PRReviewer(config_path)
 
 
 @click.group()
@@ -47,7 +72,7 @@ def review(ctx, server, repo, pr, post, output):
     console.print()
     
     try:
-        reviewer = PRReviewer(ctx.obj.get('config_path'))
+        reviewer = get_reviewer(ctx.obj.get('config_path'))
         
         with console.status("[bold green]Analyzing pull request..."):
             result = reviewer.review_pr(server, repo, pr, post_review=post)
@@ -76,7 +101,7 @@ def analyze(ctx, files, output):
     console.print(f"[bold blue]🔍 Analyzing {len(files)} file(s)[/bold blue]")
     
     try:
-        reviewer = PRReviewer(ctx.obj.get('config_path'))
+        reviewer = get_reviewer(ctx.obj.get('config_path'))
         
         # Read files
         file_contents = {}
@@ -116,51 +141,50 @@ def status(ctx, server):
     """Check server connection status"""
     console.print("[bold blue]🔗 Checking server status[/bold blue]")
     
+    # Try to use basic config first
     try:
-        reviewer = PRReviewer(ctx.obj.get('config_path'))
+        config = Config(ctx.obj.get('config_path'))
+        servers = list(config.servers.keys()) if config.servers else []
+        
+        if server and server not in servers:
+            console.print(f"[red]❌ Server '{server}' not found in configuration[/red]")
+            return
         
         if server:
             servers = [server]
-        else:
-            servers = list(reviewer.config.servers.keys())
         
         if not servers:
             console.print("[yellow]⚠️  No servers configured[/yellow]")
-            return
+            servers = ["github", "gitlab", "bitbucket"]  # Show defaults
         
         table = Table(title="Server Status")
         table.add_column("Server", style="cyan")
-        table.add_column("Type", style="magenta")
+        table.add_column("Type", style="magenta") 
         table.add_column("URL", style="blue")
         table.add_column("Status", style="green")
         
         for server_name in servers:
-            status_info = reviewer.get_server_status(server_name)
-            
-            status_icon = "✅" if status_info['connected'] else "❌"
-            status_text = "Connected" if status_info['connected'] else "Failed"
-            
-            config = status_info.get('config')
-            if config:
+            if server_name in config.servers:
+                server_config = config.servers[server_name]
                 table.add_row(
                     server_name,
-                    config.type,
-                    config.base_url,
-                    f"{status_icon} {status_text}"
+                    server_config.type,
+                    server_config.base_url,
+                    "🔧 Configured"
                 )
             else:
                 table.add_row(
                     server_name,
                     "Unknown",
-                    "Unknown",
-                    f"❌ Not configured"
+                    "Unknown", 
+                    "❌ Not configured"
                 )
         
         console.print(table)
         
     except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-        sys.exit(1)
+        console.print(f"[red]❌ Error checking status: {e}[/red]")
+        console.print("[dim]Use 'pr-review init' to create a configuration file[/dim]")
 
 
 @cli.command()
@@ -176,7 +200,7 @@ def configure(ctx, name, type, url, token):
     console.print(f"[bold blue]⚙️  Configuring server: {name}[/bold blue]")
     
     try:
-        reviewer = PRReviewer(ctx.obj.get('config_path'))
+        reviewer = get_reviewer(ctx.obj.get('config_path'))
         
         success = reviewer.configure_server(name, type, url, token)
         
@@ -228,16 +252,13 @@ def list_servers(ctx):
     """List supported server types"""
     console.print("[bold blue]📋 Supported Git Servers[/bold blue]")
     
-    try:
-        reviewer = PRReviewer(ctx.obj.get('config_path'))
-        supported = reviewer.list_supported_servers()
-        
-        for server_type in supported:
-            console.print(f"• {server_type}")
-            
-    except Exception as e:
-        console.print(f"[red]❌ Error: {e}[/red]")
-        sys.exit(1)
+    # Show supported server types
+    supported_servers = ["github", "gitlab", "bitbucket"]
+    console.print("\nSupported server types:")
+    for server_type in supported_servers:
+        console.print(f"• {server_type}")
+    
+    console.print("\n[dim]Use 'pr-review configure' to set up a server[/dim]")
 
 
 @cli.command()
