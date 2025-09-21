@@ -32,16 +32,35 @@ __email__ = "team@pr-review-agent.com"
 __license__ = "MIT"
 
 # Core exports for easy access
-from .core.reviewer import PRReviewer
-from .core.config import Config, ConfigManager
-from .core.scorer import PRScorer, ScoreCard
-from .core.ai_feedback import FeedbackManager
+try:
+    from .core.config import Config, ConfigManager
+    from .core.scorer import PRScorer, ScoreCard
+except ImportError:
+    # Basic imports if optional dependencies are missing
+    from .core.config import Config
+    
+# Optional imports that require external dependencies
+try:
+    from .core.reviewer import PRReviewer
+    from .core.ai_feedback import FeedbackManager
+except ImportError:
+    # These require github/gitlab dependencies
+    PRReviewer = None
+    FeedbackManager = None
 
 # Adapter exports
-from .adapters.base import AdapterFactory, GitServerAdapter
-from .adapters.github import GitHubAdapter
-from .adapters.gitlab import GitLabAdapter
-from .adapters.bitbucket import BitbucketAdapter
+try:
+    from .adapters.base import AdapterFactory, GitServerAdapter
+    from .adapters.github import GitHubAdapter
+    from .adapters.gitlab import GitLabAdapter
+    from .adapters.bitbucket import BitbucketAdapter
+except ImportError:
+    # These require external API dependencies
+    AdapterFactory = None
+    GitServerAdapter = None
+    GitHubAdapter = None
+    GitLabAdapter = None
+    BitbucketAdapter = None
 
 # Analyzer exports
 from .analyzers.manager import AnalysisManager
