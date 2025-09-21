@@ -132,7 +132,7 @@ class TestSecurityAnalyzer:
         """Test detection of hardcoded passwords"""
         code = '''
 def connect():
-    password = "supersecret123"
+    password = "PLACEHOLDER_PASSWORD"
     return connect_to_db(password)
 '''
         result = self.analyzer.analyze("test.py", code)
@@ -148,7 +148,7 @@ def connect():
     def test_detect_hardcoded_api_key(self):
         """Test detection of hardcoded API keys"""
         code = '''
-API_KEY = "sk-1234567890abcdef"
+API_KEY = "PLACEHOLDER_API_KEY"
 '''
         result = self.analyzer.analyze("config.py", code)
         

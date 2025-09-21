@@ -31,7 +31,7 @@ def sample_bad_python_code():
     """Sample Python code with issues for testing"""
     return '''
 def bad_function():
-    password = "secret123"
+    password = "PLACEHOLDER_PWD"
     result = eval(user_input)
     x = ""
     for i in range(1000):

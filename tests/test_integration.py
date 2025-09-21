@@ -152,7 +152,7 @@ def hello_world():
 ''',
             'bad_code.py': '''
 def bad_function():
-    password = "secret123"
+    password = "PLACEHOLDER_PWD"
     x = eval(user_input)
     result = ""
     for i in range(1000):

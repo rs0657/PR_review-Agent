@@ -76,3 +76,17 @@ dmypy.json
 # Results and outputs
 results/
 output/
+
+# SECURITY: Prevent committing real secrets or tokens
+**/real_secrets.py
+**/actual_tokens.py
+**/*_secret_*
+**/*_token_*
+**/*_key_*
+.env.local
+.env.production
+.env.development
+config/secrets.yaml
+config/local.yaml
+**/secrets.yaml
+**/local.yaml
