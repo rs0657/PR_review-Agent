@@ -10,8 +10,7 @@ GitPython>=3.1.40
 pygithub>=1.59.1
 python-gitlab>=4.2.0
 
-# Code analysis
-ast-grep>=0.13.0
+# Code analysis (ast-grep excluded - requires separate installation)
 pylint>=3.0.3
 flake8>=6.1.0
 black>=23.11.0
