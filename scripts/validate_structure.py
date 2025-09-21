@@ -76,27 +76,35 @@ class ProjectValidator:
             "README.md",
             "requirements.txt", 
             "pyproject.toml",
-            "setup.py",
             ".gitignore",
             ".env.template",
             "LICENSE",
-            "CHANGELOG.md",
             "CONTRIBUTING.md",
             "SECURITY.md"
+        ]
+        
+        # Optional recommended files
+        recommended_files = [
+            "CHANGELOG.md"
         ]
         
         print("📄 Checking required files...")
         for file_path in required_files:
             full_path = self.project_root / file_path
             if not full_path.exists():
-                if file_path in ["LICENSE", "CHANGELOG.md"]:
-                    self.warnings.append(f"Recommended file missing: {file_path}")
-                else:
-                    self.errors.append(f"Required file missing: {file_path}")
+                self.errors.append(f"Required file missing: {file_path}")
             elif not full_path.is_file():
                 self.errors.append(f"Path exists but is not a file: {file_path}")
             else:
                 print(f"  ✅ {file_path}")
+        
+        print("📋 Checking recommended files...")
+        for file_path in recommended_files:
+            full_path = self.project_root / file_path
+            if not full_path.exists():
+                self.warnings.append(f"Recommended file missing: {file_path}")
+            else:
+                print(f"  ✅ {file_path} (recommended)")
         print()
     
     def _check_python_packages(self):
